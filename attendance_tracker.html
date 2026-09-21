@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Discipline Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --purple-950:#2C0A4E;
+    --purple-800:#4C1D8C;
+    --purple-600:#6D28D9;
+    --purple-300:#C6ADF0;
+    --purple-100:#EFE7FB;
+    --yellow-500:#FACC15;
+    --yellow-600:#D4A80B;
+    --yellow-100:#FEF6D8;
+    --ink:#221338;
+    --paper:#FBF8FF;
+    --card:#FFFFFF;
+    --line:#DED0F5;
+    --good:#1E7B44;
+    --good-bg:#E4F5EA;
+    --warn:#9A6B00;
+    --warn-bg:#FFF3D6;
+    --bad:#A3273D;
+    --bad-bg:#FCE4E9;
+    --shadow: 0 1px 0 rgba(44,10,78,0.06);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#180B2B; --card:#241338; --ink:#F1E9FF; --line:#3B2260;
+      --purple-100:#2A1546; --yellow-100:#3A2E0C;
+      --good-bg:#123322; --warn-bg:#332907; --bad-bg:#3A1420;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#180B2B; --card:#241338; --ink:#F1E9FF; --line:#3B2260;
+    --purple-100:#2A1546; --yellow-100:#3A2E0C;
+    --good-bg:#123322; --warn-bg:#332907; --bad-bg:#3A1420;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Inter', system-ui, sans-serif;
+    min-height:100%;
+    -webkit-font-smoothing:antialiased;
+    font-size: 15.5px;
+  }
+  h1,h2,h3, .display { font-family:'Space Grotesk', 'Inter', sans-serif; }
+  button { font-family:inherit; }
+  a { color: var(--purple-600); }
+
+  .app { max-width: 1040px; margin: 0 auto; padding: 0 18px 64px; }
+
+  header.top {
+    background: var(--purple-950);
+    padding: calc(18px + env(safe-area-inset-top,0px)) 18px 22px;
+    color: #fff;
+  }
+  .top-inner { max-width: 1040px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .wordmark { display:flex; align-items:baseline; gap:9px; }
+  .wordmark .crest { font-size:26px; line-height:1; }
+  .wordmark .name { font-size: clamp(19px, 3vw, 22px); font-weight:700; letter-spacing:-0.01em; }
+  .wordmark .name em { font-style:normal; color:var(--yellow-500); }
+
+  .roleswitch { display:flex; background:rgba(255,255,255,0.08); border-radius:999px; padding:3px; gap:2px; }
+  .roleswitch button { border:none; background:transparent; color:#EADCFB; padding:8px 16px; border-radius:999px; font-size:14px; font-weight:600; cursor:pointer; }
+  .roleswitch button.active { background:var(--yellow-500); color:var(--purple-950); }
+  @media (hover:hover){ .roleswitch button:not(.active):hover { color:#fff; } }
+
+  .lede { color:#D9C6F5; font-size:14px; margin:14px auto 0; max-width:1040px; }
+
+  section { margin-top: 26px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow: var(--shadow); }
+  .card + .card { margin-top: 14px; }
+  .card h2 { font-size:17px; margin:0 0 4px; }
+  .subtle { color: color-mix(in srgb, var(--ink) 60%, transparent); font-size: 13.5px; margin:0 0 14px; }
+
+  .grid2 { display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px; }
+  .grid2 .card { margin-top:0; height:100%; }
+  @media (min-width:860px){ .grid2 { grid-template-columns:1fr 1fr; align-items:start; } }
+
+  label { display:block; font-size:13px; font-weight:600; margin: 12px 0 5px; }
+  input[type=text], input[type=password], input[type=time], input[type=number], select {
+    width:100%; padding:11px 12px; border-radius:9px; border:1px solid var(--line);
+    background: var(--paper); color:var(--ink); font-size:15px; font-family:inherit;
+  }
+  input:focus, select:focus, button:focus-visible { outline: 2px solid var(--purple-600); outline-offset:1px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .row > * { flex:1; min-width:140px; }
+  .checkline { display:flex; align-items:center; gap:9px; margin-top:14px; }
+  .checkline input { width:auto; }
+  .checkline label { margin:0; font-weight:500; }
+
+  .btn {
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    border-radius:10px; border:none; padding:12px 20px; font-weight:700; font-size:15px;
+    cursor:pointer; transition: transform .12s ease, filter .12s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background:var(--yellow-500); color:var(--purple-950); }
+  .btn-primary:disabled { background:var(--yellow-100); color:color-mix(in srgb, var(--purple-950) 40%, transparent); cursor:not-allowed; }
+  .btn-outline { background:transparent; border:1.5px solid var(--purple-600); color:var(--purple-600); }
+  .btn-ghost { background:var(--purple-100); color:var(--purple-800); }
+  .btn-danger { background:var(--bad-bg); color:var(--bad); }
+  .btn-block { width:100%; }
+  .btn-big { padding:22px; font-size:18px; border-radius:14px; }
+  @media (hover:hover){
+    .btn-primary:not(:disabled):hover { filter:brightness(1.06); }
+    .btn-outline:hover { background:var(--purple-100); }
+    .btn-ghost:hover { filter:brightness(0.97); }
+    .btn-danger:hover { filter:brightness(0.95); }
+  }
+
+  .chip { display:inline-flex; align-items:center; gap:5px; font-size:12.5px; font-weight:700; padding:4px 10px; border-radius:999px; white-space:nowrap; }
+  .chip-present { background:var(--good-bg); color:var(--good); }
+  .chip-late { background:var(--warn-bg); color:var(--warn); }
+  .chip-absent { background:var(--bad-bg); color:var(--bad); }
+  .chip-pending { background:var(--purple-100); color:var(--purple-800); }
+
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  .tablewrap { overflow-x:auto; }
+  th, td { text-align:left; padding:9px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { font-size:12px; text-transform:none; color:color-mix(in srgb, var(--ink) 55%, transparent); font-weight:600; }
+
+  .roster-item { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .roster-item:last-child { border-bottom:none; }
+  .roster-name { font-weight:600; }
+  .roster-sub { font-size:12.5px; color:color-mix(in srgb, var(--ink) 55%, transparent); }
+
+  .banner { background: var(--purple-100); color:var(--purple-800); border-radius:12px; padding:12px 14px; font-size:13.5px; margin-bottom:16px; display:flex; gap:10px; align-items:flex-start; }
+  .banner.warn { background:var(--warn-bg); color:var(--warn); }
+  .banner.bad { background:var(--bad-bg); color:var(--bad); }
+  .banner.good { background:var(--good-bg); color:var(--good); }
+
+  .biglock { text-align:center; padding: 30px 10px 8px; }
+  .biglock .glyph { font-size:52px; }
+  .status-line { font-size:14px; color:color-mix(in srgb, var(--ink) 60%, transparent); margin-top:6px; }
+  .clockrow { display:flex; gap:10px; margin-top:18px; }
+  .clockrow .btn { flex:1; }
+
+  .empty { text-align:center; padding:26px 10px; color:color-mix(in srgb, var(--ink) 55%, transparent); font-size:14px; }
+
+  .centerwrap { display:flex; align-items:center; justify-content:center; min-height: 44vh; }
+  .centerwrap .card { width:100%; max-width:440px; }
+  @media (min-width:700px){ .centerwrap { min-height: 50vh; } }
+
+  .statgrid { display:flex; gap:10px; margin-bottom:14px; }
+  .statbox { flex:1; text-align:center; background:var(--purple-100); border-radius:10px; padding:12px 6px; }
+  .statbox .num { font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; color:var(--purple-800); }
+  .statbox .lab { font-size:11.5px; color:color-mix(in srgb, var(--ink) 55%, transparent); }
+
+  footer.note { text-align:center; font-size:12px; color:color-mix(in srgb, var(--ink) 45%, transparent); margin-top:34px; }
+
+  @media (max-width:480px){ .clockrow { flex-direction:column; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="wordmark"><span class="crest">🎓</span><span class="name">Discipline <em>Tracker</em></span></div>
+    <div class="roleswitch" id="roleswitch">
+      <button data-role="student" class="active">Student</button>
+      <button data-role="teacher">Teacher</button>
+    </div>
+  </div>
+  <p class="lede" id="lede">Log in and clock in — no more forgotten logbook entries.</p>
+</header>
+
+<main class="app">
+  <div id="storageBanner"></div>
+  <div id="studentView"></div>
+  <div id="teacherView" style="display:none"></div>
+</main>
+
+<footer class="note">Only your teacher can see the class list and settings. Your password is your own — don't share it.</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- storage layer: shared db if granted, else this-device-only ---------- */
+  let db = null, localOnly = false;
+
+  const LS_KEY = "discipline_tracker_v3";
+  function localLoad(){ try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch(e){ return {}; } }
+  function localSave(data){ try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e){} }
+  let mem = localLoad();
+  if (!mem.config) mem.config = defaultConfig();
+  if (!mem.students) mem.students = {};
+  if (!mem.attendance) mem.attendance = {};
+
+  function defaultConfig(){
+    return {
+      className: "My Class",
+      scheduleStart: "07:40",
+      lateThresholdMin: 0,
+      requireGeofence: false,
+      geofence: null,
+      teacherCode: null
+    };
+  }
+
+  async function initStorage(){
+    try { db = await claude.use("db"); } catch(e){ db = null; }
+    if (!db) { localOnly = true; renderStorageBanner(); }
+  }
+  function renderStorageBanner(){
+    const el = document.getElementById("storageBanner");
+    el.innerHTML = localOnly ? `<div class="banner warn">
+        <span>⚠️</span>
+        <span>Running in local-only mode: accounts and attendance are saved on <b>this device only</b> and won't sync to other phones or the teacher's dashboard.
+        For attendance that syncs across every device automatically, everyone needs to be signed in to the same Claude organization — or this app needs to be hosted on its own domain with a real database.</span>
+      </div>` : "";
+  }
+
+  /* ---------- data access (snapshot.data() is a METHOD on the real db API) ---------- */
+  async function getConfig(){
+    if (db) { try { const snap = await db.doc("config/class").get(); return snap.exists ? Object.assign(defaultConfig(), snap.data()) : defaultConfig(); } catch(e){ return defaultConfig(); } }
+    return Object.assign(defaultConfig(), mem.config);
+  }
+  async function setConfig(cfg){
+    if (db) { try { await db.doc("config/class").set(cfg); return; } catch(e){} }
+    mem.config = cfg; localSave(mem);
+  }
+  async function listStudents(){
+    if (db) { try { const snap = await db.collection("students").get(); const out={}; snap.docs.forEach(d=>{ out[d.id]=d.data(); }); return out; } catch(e){ return {}; } }
+    return mem.students;
+  }
+  async function getStudent(username){
+    if (db) { try { const snap = await db.doc("students/"+username).get(); return snap.exists ? snap.data() : null; } catch(e){ return null; } }
+    return mem.students[username] || null;
+  }
+  async function setStudent(username, data){
+    if (db) { try { await db.doc("students/"+username).set(data); return; } catch(e){} }
+    mem.students[username] = data; localSave(mem);
+  }
+  async function deleteStudent(username){
+    if (db) { try { await db.doc("students/"+username).delete(); return; } catch(e){} }
+    delete mem.students[username]; localSave(mem);
+  }
+  async function listAttendanceToday(dateKey){
+    if (db) {
+      try { const snap = await db.collection("attendance").where("date","==",dateKey).get(); const out = {}; snap.docs.forEach(d=>{ const data=d.data(); out[data.username]=data; }); return out; }
+      catch(e){ return {}; }
+    }
+    const out = {}; Object.values(mem.attendance).forEach(r=>{ if (r.date===dateKey) out[r.username]=r; }); return out;
+  }
+  async function listAttendanceForStudent(username){
+    if (db) {
+      try { const snap = await db.collection("attendance").where("username","==",username).orderBy("date","desc").limit(200).get(); return snap.docs.map(d=>d.data()); }
+      catch(e){ return []; }
+    }
+    return Object.values(mem.attendance).filter(r=>r.username===username).sort((a,b)=> a.date<b.date?1:-1);
+  }
+  async function listAttendanceAll(){
+    if (db) { try { const snap = await db.collection("attendance").orderBy("date","desc").limit(300).get(); return snap.docs.map(d=>d.data()); } catch(e){ return []; } }
+    return Object.values(mem.attendance).sort((a,b)=> a.date<b.date?1:-1);
+  }
+  async function setAttendance(recId, data){
+    if (db) { try { await db.doc("attendance/"+recId).set(data); return; } catch(e){} }
+    mem.attendance[recId] = data; localSave(mem);
+  }
+
+  /* ---------- helpers ---------- */
+  function todayKey(d){ d = d || new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+  function timeNow(d){ d = d || new Date(); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }
+  function fmtTime(t){ return t ? t : "—"; }
+  function minutesOf(t){ const [h,m]=t.split(":").map(Number); return h*60+m; }
+  function minutesToTime(m){ m=((m%1440)+1440)%1440; const h=Math.floor(m/60), mm=m%60; return String(h).padStart(2,"0")+":"+String(mm).padStart(2,"0"); }
+  function isWeekday(d){ const day = d.getDay(); return day>=1 && day<=5; }
+  function escapeHtml(s){ return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+  function sanitizeUsername(u){ return String(u||"").trim().toLowerCase().replace(/[^a-z0-9_.\-]/g,""); }
+  async function sha256Hex(text){
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
+  function haversineM(lat1,lng1,lat2,lng2){
+    const R=6371000, toRad = d=>d*Math.PI/180;
+    const dLat = toRad(lat2-lat1), dLng = toRad(lng2-lng1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  }
+  function checkGeofence(cfg){
+    return new Promise((resolve)=>{
+      if (!cfg.requireGeofence || !cfg.geofence) return resolve({ok:true});
+      if (!navigator.geolocation) return resolve({ok:false, reason:"This device can't share its location."});
+      navigator.geolocation.getCurrentPosition((pos)=>{
+        const d = haversineM(pos.coords.latitude, pos.coords.longitude, cfg.geofence.lat, cfg.geofence.lng);
+        if (d <= cfg.geofence.radiusM) resolve({ok:true});
+        else resolve({ok:false, reason:"You're "+Math.round(d)+"m from class — you need to be within "+cfg.geofence.radiusM+"m to clock in."});
+      }, ()=> resolve({ok:false, reason:"Turn on location sharing to clock in for this class."}), {timeout:8000});
+    });
+  }
+
+  /* =================================================================
+     STUDENT VIEW
+  ================================================================= */
+  let currentUsername = sessionStorage.getItem("dt_user") || null;
+
+  async function renderStudentView(){
+    const root = document.getElementById("studentView");
+    const cfg = await getConfig();
+    if (!currentUsername) { renderLogin(root, cfg); return; }
+    const student = await getStudent(currentUsername);
+    if (!student) { currentUsername=null; sessionStorage.removeItem("dt_user"); renderLogin(root, cfg); return; }
+    await renderClock(root, student, cfg);
+  }
+
+  function renderLogin(root, cfg){
+    root.innerHTML = `
+      <div class="centerwrap"><div class="card">
+        <h2>Log in to ${escapeHtml(cfg.className)}</h2>
+        <p class="subtle">Use the username and password your teacher set up for you.</p>
+        <label>Username</label>
+        <input type="text" id="loginUser" autocomplete="username">
+        <label>Password</label>
+        <input type="password" id="loginPass" autocomplete="current-password">
+        <button class="btn btn-primary btn-block" id="loginBtn" style="margin-top:16px">Log in</button>
+        <div id="loginMsg"></div>
+      </div></div>`;
+    const doLogin = async ()=>{
+      const msg = document.getElementById("loginMsg");
+      const u = sanitizeUsername(document.getElementById("loginUser").value);
+      const p = document.getElementById("loginPass").value;
+      if (!u || !p) { msg.innerHTML = `<div class="banner bad">Enter your username and password.</div>`; return; }
+      const student = await getStudent(u);
+      if (!student) { msg.innerHTML = `<div class="banner bad">No account with that username. Ask your teacher.</div>`; return; }
+      const hash = await sha256Hex(p);
+      if (hash !== student.passwordHash) { msg.innerHTML = `<div class="banner bad">Incorrect username or password.</div>`; return; }
+      currentUsername = u; sessionStorage.setItem("dt_user", u);
+      renderStudentView();
+    };
+    document.getElementById("loginBtn").onclick = doLogin;
+    document.getElementById("loginPass").addEventListener("keydown", (e)=>{ if (e.key==="Enter") doLogin(); });
+  }
+
+  async function renderClock(root, student, cfg){
+    const now = new Date();
+    const dateKey = todayKey(now);
+    const weekdayOk = isWeekday(now);
+    const todays = await listAttendanceToday(dateKey);
+    const rec = todays[student.username];
+    const inTime = rec ? rec.inTime : null;
+    const outTime = rec ? rec.outTime : null;
+
+    const lateCutoffMin = minutesOf(cfg.scheduleStart) + Number(cfg.lateThresholdMin || 0);
+
+    let statusChip = `<span class="chip chip-pending">Not clocked in</span>`;
+    if (rec && rec.status==="present") statusChip = `<span class="chip chip-present">Present · in ${fmtTime(inTime)}</span>`;
+    if (rec && rec.status==="late") statusChip = `<span class="chip chip-late">Late · in ${fmtTime(inTime)}</span>`;
+
+    const history = await listAttendanceForStudent(student.username);
+    const presentCount = history.filter(r=>r.status==="present").length;
+    const lateCount = history.filter(r=>r.status==="late").length;
+
+    let statusLine;
+    if (!weekdayOk) statusLine = "Attendance is only recorded Monday to Friday — nothing to clock in today.";
+    else if (outTime) statusLine = "You clocked out at "+fmtTime(outTime)+" — see you next class.";
+    else if (inTime) statusLine = "Clocked in at "+fmtTime(inTime)+". Clock out when class ends.";
+    else statusLine = "Tap below to clock in any time. Clock in after "+minutesToTime(lateCutoffMin)+" and you'll be marked late.";
+
+    root.innerHTML = `
+      <div class="centerwrap"><div class="card">
+        <div class="row" style="align-items:center; justify-content:space-between; flex-wrap:wrap">
+          <div><h2 style="margin-bottom:2px">${escapeHtml(student.name)}</h2><span class="roster-sub">${escapeHtml(cfg.className)}</span></div>
+          ${statusChip}
+        </div>
+        <div class="biglock">
+          <div class="glyph">${outTime ? "✅" : (inTime ? "🔓" : "🔒")}</div>
+          <div class="status-line">${statusLine}</div>
+        </div>
+        <div class="clockrow">
+          <button class="btn btn-primary btn-big" id="clockBtn" ${(inTime || !weekdayOk) ? "disabled":""}>Clock in</button>
+          <button class="btn btn-ghost btn-big" id="outBtn" ${(!inTime || outTime || !weekdayOk) ? "disabled":""}>Clock out</button>
+        </div>
+        <div id="clockMsg"></div>
+        <button class="btn btn-outline btn-block" id="logoutBtn" style="margin-top:16px">Log out</button>
+      </div></div>
+
+      <div class="card">
+        <h2>My attendance this term</h2>
+        <div class="statgrid">
+          <div class="statbox"><div class="num">${presentCount}</div><div class="lab">Present</div></div>
+          <div class="statbox"><div class="num">${lateCount}</div><div class="lab">Late</div></div>
+          <div class="statbox"><div class="num">${history.length}</div><div class="lab">Total logged</div></div>
+        </div>
+        <div class="tablewrap">
+          ${history.length ? `<table>
+            <tr><th>Date</th><th>Status</th><th>In</th><th>Out</th></tr>
+            ${history.map(r=>{
+              const chip = r.status==="late" ? `<span class="chip chip-late">Late</span>` : `<span class="chip chip-present">Present</span>`;
+              return `<tr><td>${r.date}</td><td>${chip}</td><td>${fmtTime(r.inTime)}</td><td>${fmtTime(r.outTime)}</td></tr>`;
+            }).join("")}
+          </table>` : `<div class="empty">Nothing logged yet this term.</div>`}
+        </div>
+      </div>`;
+
+    document.getElementById("logoutBtn").onclick = ()=>{ currentUsername=null; sessionStorage.removeItem("dt_user"); renderStudentView(); };
+    document.getElementById("clockBtn").onclick = ()=> doClock(student, cfg, "in");
+    document.getElementById("outBtn").onclick = ()=> doClock(student, cfg, "out");
+  }
+
+  async function doClock(student, cfg, direction){
+    const msg = document.getElementById("clockMsg");
+    const now = new Date();
+    if (!isWeekday(now)) { msg.innerHTML = `<div class="banner bad">Attendance isn't recorded on weekends.</div>`; return; }
+
+    msg.innerHTML = `<div class="banner">Checking your location…</div>`;
+    const geo = await checkGeofence(cfg);
+    if (!geo.ok) { msg.innerHTML = `<div class="banner bad">🚫 ${escapeHtml(geo.reason)}</div>`; return; }
+
+    const dateKey = todayKey(now);
+    const recId = student.username+"_"+dateKey;
+    const todays = await listAttendanceToday(dateKey);
+    const existing = todays[student.username]
+      ? { ...todays[student.username] }
+      : { username: student.username, name: student.name, date: dateKey };
+
+    if (direction === "in") {
+      const nowMin = minutesOf(timeNow(now));
+      const lateCutoffMin = minutesOf(cfg.scheduleStart) + Number(cfg.lateThresholdMin || 0);
+      existing.status = nowMin > lateCutoffMin ? "late" : "present";
+      existing.inTime = timeNow(now);
+      existing.method = "login";
+    } else {
+      existing.outTime = timeNow(now);
+    }
+    await setAttendance(recId, existing);
+    msg.innerHTML = `<div class="banner good">✅ ${direction==="in" ? "Clocked in" : "Clocked out"} at ${timeNow(now)}.</div>`;
+    setTimeout(()=> renderStudentView(), 800);
+  }
+
+  /* =================================================================
+     TEACHER VIEW — gated by a class monitor code
+  ================================================================= */
+  let teacherUnlocked = sessionStorage.getItem("dt_teacher_unlocked") === "1";
+
+  async function renderTeacherView(){
+    const root = document.getElementById("teacherView");
+    const cfg = await getConfig();
+    if (!teacherUnlocked) { renderTeacherGate(root, cfg); return; }
+    renderTeacherDashboard(root, cfg);
+  }
+
+  function renderTeacherGate(root, cfg){
+    const creating = !cfg.teacherCode;
+    root.innerHTML = `
+      <div class="centerwrap"><div class="card">
+        <h2>${creating ? "Set a class monitor code" : "Teacher section"}</h2>
+        <p class="subtle">${creating
+          ? "This code protects the class list and settings. Choose one only you (or the class monitor) will know."
+          : "Enter the class monitor code to open the teacher tools."}</p>
+        <label>${creating ? "Create a code" : "Class monitor code"}</label>
+        <input type="password" id="codeInput" autocomplete="off">
+        ${creating ? `<label>Confirm code</label><input type="password" id="codeInput2" autocomplete="off">` : ""}
+        <button class="btn btn-primary btn-block" id="codeBtn" style="margin-top:16px">${creating ? "Save code and continue" : "Unlock"}</button>
+        <div id="codeMsg"></div>
+      </div></div>`;
+    document.getElementById("codeBtn").onclick = async ()=>{
+      const msg = document.getElementById("codeMsg");
+      const code = document.getElementById("codeInput").value;
+      if (!code || code.length < 4) { msg.innerHTML = `<div class="banner bad">Use at least 4 characters.</div>`; return; }
+      if (creating) {
+        const code2 = document.getElementById("codeInput2").value;
+        if (code !== code2) { msg.innerHTML = `<div class="banner bad">Codes don't match.</div>`; return; }
+        const hash = await sha256Hex(code);
+        await setConfig({...cfg, teacherCode: hash});
+        teacherUnlocked = true; sessionStorage.setItem("dt_teacher_unlocked","1");
+        renderTeacherView();
+      } else {
+        const hash = await sha256Hex(code);
+        if (hash !== cfg.teacherCode) { msg.innerHTML = `<div class="banner bad">Wrong code.</div>`; return; }
+        teacherUnlocked = true; sessionStorage.setItem("dt_teacher_unlocked","1");
+        renderTeacherView();
+      }
+    };
+  }
+
+  async function renderTeacherDashboard(root, cfg){
+    const students = await listStudents();
+    const usernames = Object.keys(students).sort((a,b)=> students[a].name.localeCompare(students[b].name));
+    const dateKey = todayKey();
+    const todays = await listAttendanceToday(dateKey);
+
+    root.innerHTML = `
+      <div class="card">
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <h2 style="margin:0">Class setup</h2>
+          <button class="btn btn-outline" id="lockBtn">🔒 Lock teacher section</button>
+        </div>
+        <p class="subtle">Students can clock in any time on a school day — this just decides when they're marked late.</p>
+        <div class="row">
+          <div><label>Class name</label><input type="text" id="className" value="${escapeHtml(cfg.className)}"></div>
+          <div><label>Class starts</label><input type="time" id="startTime" value="${cfg.scheduleStart}"></div>
+          <div><label>Late after (min past start)</label><input type="number" id="lateMin" min="0" value="${cfg.lateThresholdMin}"></div>
+        </div>
+        <div class="checkline">
+          <input type="checkbox" id="geoOn" ${cfg.requireGeofence?"checked":""}>
+          <label for="geoOn">Require students to be near the classroom to clock in</label>
+        </div>
+        <div id="geoRow" style="${cfg.requireGeofence?"":"display:none"}; margin-top:8px">
+          <div class="row">
+            <button class="btn btn-outline" id="useLocationBtn" type="button">📍 Use my current location as the classroom</button>
+            <div><label>Allowed radius (m)</label><input type="number" id="radiusM" min="10" value="${cfg.geofence?cfg.geofence.radiusM:60}"></div>
+          </div>
+          <p class="subtle" id="geoStatus" style="margin-top:8px">${cfg.geofence ? "Classroom location set." : "No location set yet — stand in the classroom and tap the button."}</p>
+        </div>
+        <label style="margin-top:16px">Change class monitor code</label>
+        <input type="password" id="newCode" placeholder="New code (leave blank to keep current)">
+        <button class="btn btn-primary" id="saveConfig" style="margin-top:14px">Save class settings</button>
+        <div id="configMsg"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>Add a student</h2>
+          <p class="subtle">Set their username and password now — they can log in immediately.</p>
+          <label>Full name</label><input type="text" id="newName" placeholder="e.g. Maria Santos">
+          <label>Username</label><input type="text" id="newUser" placeholder="e.g. maria.s">
+          <label>Password</label><input type="text" id="newPass" placeholder="e.g. a temp password">
+          <button class="btn btn-primary btn-block" id="addStudent" style="margin-top:10px">Add student</button>
+          <div id="addMsg"></div>
+        </div>
+
+        <div class="card">
+          <h2>Roster</h2>
+          ${usernames.length ? usernames.map(u=>{
+            const s = students[u];
+            return `<div class="roster-item">
+              <div><div class="roster-name">${escapeHtml(s.name)}</div><div class="roster-sub">username: ${escapeHtml(s.username)}</div></div>
+              <div class="row" style="flex:none; gap:8px">
+                <button class="btn btn-ghost" data-reset="${u}">Reset password</button>
+                <button class="btn btn-danger" data-remove="${u}">Remove</button>
+              </div>
+            </div>`;
+          }).join("") : `<div class="empty">No students yet — add your first one.</div>`}
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>Today · ${escapeHtml(cfg.className)}</h2>
+          <div class="tablewrap"><table>
+            <tr><th>Student</th><th>Status</th><th>In</th><th>Out</th></tr>
+            ${usernames.map(u=>{
+              const s = students[u]; const rec = todays[u];
+              const chip = !rec ? `<span class="chip chip-absent">Not yet</span>`
+                : rec.status==="late" ? `<span class="chip chip-late">Late</span>`
+                : `<span class="chip chip-present">Present</span>`;
+              return `<tr><td>${escapeHtml(s.name)}</td><td>${chip}</td><td>${fmtTime(rec&&rec.inTime)}</td><td>${fmtTime(rec&&rec.outTime)}</td></tr>`;
+            }).join("")}
+          </table></div>
+        </div>
+
+        <div class="card">
+          <h2>Recent history — all students</h2>
+          <div class="tablewrap" id="historyWrap"><div class="empty">Loading…</div></div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("lockBtn").onclick = ()=>{ teacherUnlocked=false; sessionStorage.removeItem("dt_teacher_unlocked"); renderTeacherView(); };
+    document.getElementById("geoOn").onchange = (e)=>{ document.getElementById("geoRow").style.display = e.target.checked ? "" : "none"; };
+    document.getElementById("useLocationBtn").onclick = ()=>{
+      const st = document.getElementById("geoStatus");
+      st.textContent = "Getting location…";
+      navigator.geolocation.getCurrentPosition((pos)=>{
+        window.__dtGeo = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        st.textContent = "Classroom location captured ✓ — save settings to apply.";
+      }, ()=> st.textContent = "Couldn't get location — check permissions.");
+    };
+    document.getElementById("saveConfig").onclick = async ()=>{
+      const newCfg = {
+        className: document.getElementById("className").value || "My Class",
+        scheduleStart: document.getElementById("startTime").value || "07:40",
+        lateThresholdMin: Number(document.getElementById("lateMin").value)||0,
+        requireGeofence: document.getElementById("geoOn").checked,
+        geofence: cfg.geofence,
+        teacherCode: cfg.teacherCode
+      };
+      if (newCfg.requireGeofence) {
+        const radiusM = Number(document.getElementById("radiusM").value)||60;
+        if (window.__dtGeo) newCfg.geofence = { lat: window.__dtGeo.lat, lng: window.__dtGeo.lng, radiusM };
+        else if (cfg.geofence) newCfg.geofence.radiusM = radiusM;
+      }
+      const newCode = document.getElementById("newCode").value;
+      if (newCode) { if (newCode.length < 4) { document.getElementById("configMsg").innerHTML = `<div class="banner bad">New code needs at least 4 characters.</div>`; return; } newCfg.teacherCode = await sha256Hex(newCode); }
+      await setConfig(newCfg);
+      document.getElementById("configMsg").innerHTML = `<div class="banner good">✅ Saved.</div>`;
+      setTimeout(renderTeacherView, 700);
+    };
+    document.getElementById("addStudent").onclick = async ()=>{
+      const addMsg = document.getElementById("addMsg");
+      const name = document.getElementById("newName").value.trim();
+      const username = sanitizeUsername(document.getElementById("newUser").value);
+      const pass = document.getElementById("newPass").value;
+      if (!name || !username || !pass) { addMsg.innerHTML = `<div class="banner bad">Fill in name, username, and password.</div>`; return; }
+      if (username.length < 3) { addMsg.innerHTML = `<div class="banner bad">Username needs at least 3 characters (letters, numbers, . _ -).</div>`; return; }
+      const existing = await getStudent(username);
+      if (existing) { addMsg.innerHTML = `<div class="banner bad">That username is already taken.</div>`; return; }
+      const passwordHash = await sha256Hex(pass);
+      await setStudent(username, { username, name, passwordHash, createdAt: Date.now() });
+      renderTeacherDashboard(root, cfg);
+    };
+    root.querySelectorAll("[data-remove]").forEach(b=>{
+      b.onclick = async ()=>{ await deleteStudent(b.dataset.remove); renderTeacherDashboard(root, cfg); };
+    });
+    root.querySelectorAll("[data-reset]").forEach(b=>{
+      b.onclick = async ()=>{
+        const u = b.dataset.reset;
+        const newPass = prompt("New password for this student:");
+        if (!newPass) return;
+        const s = await getStudent(u);
+        const passwordHash = await sha256Hex(newPass);
+        await setStudent(u, {...s, passwordHash});
+        alert("Password updated. Tell the student their new password.");
+      };
+    });
+
+    renderHistory();
+  }
+
+  async function renderHistory(){
+    const wrap = document.getElementById("historyWrap");
+    if (!wrap) return;
+    const rows = await listAttendanceAll();
+    if (!rows.length) { wrap.innerHTML = `<div class="empty">No attendance recorded yet.</div>`; return; }
+    wrap.innerHTML = `<table>
+      <tr><th>Date</th><th>Student</th><th>Status</th><th>In</th><th>Out</th></tr>
+      ${rows.slice(0,80).map(r=>{
+        const chip = r.status==="late" ? `<span class="chip chip-late">Late</span>` : `<span class="chip chip-present">Present</span>`;
+        return `<tr><td>${r.date}</td><td>${escapeHtml(r.name)}</td><td>${chip}</td><td>${fmtTime(r.inTime)}</td><td>${fmtTime(r.outTime)}</td></tr>`;
+      }).join("")}
+    </table>`;
+  }
+
+  /* ---------- role switch ---------- */
+  document.getElementById("roleswitch").addEventListener("click", (e)=>{
+    const btn = e.target.closest("button"); if(!btn) return;
+    document.querySelectorAll("#roleswitch button").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    const role = btn.dataset.role;
+    document.getElementById("studentView").style.display = role==="student" ? "" : "none";
+    document.getElementById("teacherView").style.display = role==="teacher" ? "" : "none";
+    document.getElementById("lede").textContent = role==="student"
+      ? "Log in and clock in — no more forgotten logbook entries."
+      : "Set up your class, manage the roster, and see who showed up — automatically.";
+    if (role==="teacher") renderTeacherView(); else renderStudentView();
+  });
+
+  /* ---------- boot ---------- */
+  (async function boot(){
+    await initStorage();
+    await renderStudentView();
+  })();
+})();
+</script>
+</body>
+</html>
